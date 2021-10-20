@@ -20,10 +20,10 @@ LYRIC_PATH = "/api/v2/lyric/get/lyric"
 SECRET_KEY ="2aa2d1c561e809b267f3638c4a307aab"
 API_KEY = "88265e23d4284f25963e6eedac8fbfa3"
 START = 0
-END =36000000
-STEP=200
+END =149
+STEP=1
 PAGE = "https://zingmp3.vn"
-COOKIE = "zmp3_rqid=MHwxNC4xNjUdUngMTgyLjIwNXx2MS40LjJ8MTYzNDYyNjMyMDAzMA"
+COOKIE = "zmp3_rqid=MHwxNC4xNjUdUngMTgyLjIwNXx2MS40LjJ8MTYzNDmUsICxNTQ4NzA3NQ"
 #######################################################
 def Hash256(value):
     h = hashlib.sha256(value.encode('utf-8'))
@@ -84,12 +84,12 @@ def int2base(x, base):
 #################################################
 def WriteData(path, data):
     f = open(path, 'a+', encoding='utf-8')
-    obj = json.dumps(data, ensure_ascii=False).encode('utf-8')
-    f.write(obj.encode()+"\n")
+    obj = json.dumps(data, ensure_ascii=False).encode('utf8')
+    f.write(obj.decode()+"\n")
 
 def WriteError(path, data):
     f = open(path,'a+', encoding='utf-8')
-    obj = json.dumps(data, ensure_ascii=False).encode('utf-8')
+    obj = json.dumps(data, ensure_ascii=False).encode('utf8')
     f.write(obj.decode() + "\n")
 
 def WriteTotal(path, data):
@@ -102,83 +102,76 @@ def getStart():
 ####################################################
 
 def ResolveInfoObj(obj):
-    if "isOfficial" in obj:
-        del obj['isOfficial']
+
+
+    if "isOffical" in obj:
+        del obj['isOffical']
     if "username" in obj:
         del obj['username']
-    if "isWorldWide" in  obj:
+    if "isWorldWide" in obj:
         del obj['isWorldWide']
-    if "isWorldWide"in obj:
+    if "comment" in obj:
+        del obj['comment']
+    if "isWorldWide" in obj:
         del obj['isWorldWide']
     if "link" in obj:
         del obj['link']
-    if "isZMA"in  obj:
+    if "isZMA" in obj:
         del obj['isZMA']
-    if "zingChoice" in obj:
-        del obj['zingChoice']
+    if "zingChoise" in obj:
+        del obj['zingChoise']
+    if "isPrivate" in obj:
+        del obj['isPrivate']
     if "preRelease" in obj:
         del obj['preRelease']
     if "radioId" in obj:
         del obj['radioId']
     if "streamingStatus" in obj:
         del obj['streamingStatus']
+    if "album" in obj:
+        del obj['album']
     if "allowAudioAds" in obj:
-        del obj['allowAudiosAds']
+        del obj['allowAudioAds']
     if "userid" in obj:
         del obj['userid']
-    if "album" in obj:
-        del obj["album"]
     if "radio" in obj:
-        del obj["radio"]
-    if "listen" in obj:
-        del obj["listen"]
-    if "liked" in obj:
-        del obj["liked"]
-    if "comment" in obj:
-        del obj["comment"]
+        del obj['radio']
     if "isRBT" in obj:
-        del obj["isRBT"]
+        del obj['isRBT']
+    if "listen" in obj:
+        del obj['listen']
+    if "liked" in obj:
+        del obj['liked']
+    if "album" in obj:
+        del obj['album']
 
-
-
-    #listSec = []
-    #if 'sections' in obj:
-    #    for sec in obj['sections'][0]['items']:
-    #        listSec.append(sec['encodeId'])
-    #obj['sections'] = listSec
 
     listArt = []
     if 'artists' in obj:
-        for art in obj['artist']:
-            listArt.append({"id": art[id], "name":art['name']})
-            WriteData("art.txt", {"id": art["id"],"name": art["name"]})
-    obj["artists"] = listArt
-
+        for art in obj['artists']:
+            listArt.append({'id': art['id'], 'name':art['name']})
+            WriteData('./Data/art/art.txt', {'id': art['id'],'name': art['name']})
+    obj['artists'] = listArt
 
     listComposers = []
     if 'composers' in obj:
         for com in obj['composers']:
-            listComposers.append({"id": com[id], "name":com['name']})
-            WriteData("com.txt", {"id": com["id"],"name": com["name"]})
+            listComposers.append({"id": com['id'], "name":com['name']})
+            WriteData("./Data/composer/compo.txt", {"id": com["id"],"name": com["name"]})
     obj["composers"] =listComposers
 
 
     listGenres = []
-    types = ""
     if 'genres' in obj:
         for gen in obj['genres']:
-            types+=gen['alias']+"-"
-            listGenres.append({"id": gen[id], "name":gen['name']})
-            WriteData("com.txt", {"id": gen["id"],"name": gen["name"]})
+            listGenres.append({"id": gen['id'], "name":gen['name']})
+            WriteData("./Data/genre/genre.txt", {"id": gen["id"],"name": gen["name"]})
     obj["genres"] =listGenres
-    obj["types"] = types
 
     return obj
 
 
 
-def ResolveBeatObj:
-    return obj
 
 
 
@@ -186,46 +179,34 @@ def ResolveBeatObj:
 def process_id(prefix, id, cook):
     """process a single ID """
     try:
-        ID =  getID(id)
-        url = getSongUrl(prefix + ID, CTIME)
+        #ID =  getID(id)
+        #url = getSongUrl(prefix + ID, CTIME)
+        url ="https://zingmp3.vn/api/v2/song/get/info?id=ZW6A87CF&ctime=1634631127&version=1.4.2&sig=5d0c83f1912472c5d79cf9996af2253967053fdd9bac9721d73293ae5fe41189a3068cb282f47851d3c7dc46c8acb21add97d829e3a134bfb72b94081cdee308&apiKey=88265e23d4284f25963e6eedac8fbfa3"
         res = requests.get(url,headers={"cookie":cook})
         obj = res.json()
-        if obj['err'] == -201:
-            print("\nCOOKIE Expired")
-            global COOKIE
-            cok = res.headers["Set-Cookie"]
-            COOKIE = cok
-            return process_id(prefix, id, COOKIE)
-        elif obj['err']== -1023:
-            #print("ID not found: "  + prefix+ ID)
+        try:
+            if obj['err'] == -201:
+                print("\nCOOKIE Expired")
+                global COOKIE
+                cok = res.headers["Set-Cookie"]
+                COOKIE = cok
+                return process_id(prefix, id, COOKIE)
+            elif obj['err']== -1023:
+                #print("ID not found: "  + prefix+ ID)
+                return id
+            elif obj['err'] == 0:
+                print("Found ID: " + ID)
+                rObj = ResolveInfoObj(obj['data'])
+                WriteData("Data/song/" + rObj['encodeId'] +".txt", rObj)
+            else:
+                print("Some error occur")
+        except:
+            print("Some thing else occur")
+        finally:
             return id
-        elif obj['err'] == 0:
-            print("Found ID: " + ID)
-            return id
-       #try:
-       #    if obj['err'] == -201:
-       #        print ("COOKIE expired")
-       #        #global COOKIE
-       #        COOKIE = res.headers["Set-Cookie"]
-       #        return process_id(prefix,  id, cook)
-       #    elif obj['err'] == -1023:
-       #        print ("ID not found:" + ID)
-       #        return id
-       #    elif obj['err'] == 0:
-       #        ##r = resolveObj(obj['data'])
-       #        ##writeData()
-       #        print("Success!")
-       #    else:
-       #        print("Some Error Occur")
-       #except:
-       #    print("Error occured when sent request!")
-       #finally:
-       #    return id
     except:
         print("Error")
     return id
-
-
 
 
 def process_range(prefix, id_range, store= None):
@@ -285,4 +266,5 @@ def Download():
     res = requests.get("https://zingmp3.vn/api/v2/song/get/streaming?id=ZW6B769F&ctime=1634524232&version=1.4.2&sig=9ce3c593444b24ae6ac4b2851379f60a2f978a859aa6e60c109424be87754f5e293dba3f7f999fc4c2dbca73d89655d1e945ff6c8262bc7a65e754e5f43b312e&apiKey=88265e23d4284f25963e6eedac8fbfa3",headers={"cookie":COOKIE})
     print(res.json())
 
-Clone()
+if  __name__ == '__main__':
+    Clone()
