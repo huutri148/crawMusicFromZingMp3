@@ -187,8 +187,7 @@ def ResolveStreamObj(url,Id):
 def process_id(prefix, id, cook):
     """process a single ID """
     try:
-        #ID =  getID(id)
-        ID = "ZUZIOWF0"
+        ID =  getID(id)
         url = getSongUrl(ID, CTIME)
         ##url ="https://zingmp3.vn/api/v2/song/get/streaming?id=ZW7O777O&ctime=1634777397&version=1.4.2&sig=a90ff23bf3e994d33c729a17fa9e658453dad26041d5554acdf5e1219f712b126d1347a522a5c05d6b7541b3458d0b358253edab0514d38d94555e428a910ad7&apiKey=88265e23d4284f25963e6eedac8fbfa3"
         res = requests.get(url,headers={"cookie":cook})
@@ -206,13 +205,15 @@ def process_id(prefix, id, cook):
                 return id
             elif obj['err'] == -112:
                 print('Private Data')
+            elif obj['err'] == -1150:
+                print("Yêu cầu tài khoản VIP")
             elif obj['err'] == 0:
                 print("Found ID: " + ID)
-                #rObj = ResolveInfoObj(obj['data'])
-                #WriteData("Data/song/" + rObj['encodeId'] +".txt", rObj)
+                rObj = ResolveInfoObj(obj['data'])
+                WriteData("Data/song/" + rObj['encodeId'] +".txt", rObj)
                 data = obj['data']
-                print(data)
-                ResolveStreamObj(data['128'], ID)
+                #print(data)
+                #ResolveStreamObj(data['128'], ID)
             else:
                 print("Some error occur")
         except:
@@ -240,7 +241,8 @@ def threaded_process_range(nthreads, id_range):
     threadsZW = []
     storeZO = {}
     threadsZO = []
-
+    storeZU = {}
+    threadZU = []
 
 
 
@@ -249,18 +251,22 @@ def threaded_process_range(nthreads, id_range):
         ids = id_range[i::nthreads]
         t1 = Thread(target = process_range, args=("ZW", ids, storeZW))
         t2 = Thread(target = process_range, args=("ZO", ids, storeZO))
+        t3 = Thread(target = process_range, args=("ZU", ids, storeZU))
 
         threadsZW.append(t1)
         threadsZO.append(t2)
+        threadZU.append(t3)
 
 
 
     #start the threads
     [ t1.start() for t1 in threadsZW ]
     [ t2.start() for t2 in threadsZO ]
+    [ t3.start() for t3 in threadsZU ]
     #wait for the theads to finish
     [t1.join() for t1 in threadsZW]
     [t2.join() for t2 in threadsZO]
+    [t3.join() for t2 in threadsZO]
 
 
     return storeZO.update(storeZW)
