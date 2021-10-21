@@ -21,7 +21,7 @@ SECRET_KEY ="2aa2d1c561e809b267f3638c4a307aab"
 API_KEY = "88265e23d4284f25963e6eedac8fbfa3"
 START = 0
 END =149
-STEP=1
+STEP= 1
 PAGE = "https://zingmp3.vn"
 COOKIE = "zmp3_rqid=MHwxNC4xNjUdUngMTgyLjIwNXx2MS40LjJ8MTYzNDmUsIC3NzM5NjQ1NA"
 #######################################################
@@ -188,10 +188,12 @@ def process_id(prefix, id, cook):
     """process a single ID """
     try:
         #ID =  getID(id)
-        #url = getSongUrl(prefix + ID, CTIME)
-        url ="https://zingmp3.vn/api/v2/song/get/streaming?id=ZW7O777O&ctime=1634777397&version=1.4.2&sig=a90ff23bf3e994d33c729a17fa9e658453dad26041d5554acdf5e1219f712b126d1347a522a5c05d6b7541b3458d0b358253edab0514d38d94555e428a910ad7&apiKey=88265e23d4284f25963e6eedac8fbfa3"
+        ID = "ZUZIOWF0"
+        url = getSongUrl(ID, CTIME)
+        ##url ="https://zingmp3.vn/api/v2/song/get/streaming?id=ZW7O777O&ctime=1634777397&version=1.4.2&sig=a90ff23bf3e994d33c729a17fa9e658453dad26041d5554acdf5e1219f712b126d1347a522a5c05d6b7541b3458d0b358253edab0514d38d94555e428a910ad7&apiKey=88265e23d4284f25963e6eedac8fbfa3"
         res = requests.get(url,headers={"cookie":cook})
         obj = res.json()
+        print(obj)
         try:
             if obj['err'] == -201:
                 print("\nCOOKIE Expired")
@@ -202,11 +204,14 @@ def process_id(prefix, id, cook):
             elif obj['err']== -1023:
                 #print("ID not found: "  + prefix+ ID)
                 return id
+            elif obj['err'] == -112:
+                print('Private Data')
             elif obj['err'] == 0:
                 print("Found ID: " + ID)
                 #rObj = ResolveInfoObj(obj['data'])
                 #WriteData("Data/song/" + rObj['encodeId'] +".txt", rObj)
                 data = obj['data']
+                print(data)
                 ResolveStreamObj(data['128'], ID)
             else:
                 print("Some error occur")
