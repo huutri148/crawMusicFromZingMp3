@@ -14,16 +14,16 @@ from threading import Thread
 #########################################################
 ID = "ZOZ0WD80"
 CTIME = "1634197735"
-INFO_PATH = "/api/v2/song/get/info"
+INFO_PATH = "/api/v3/song/get/info"
 STREAM_PATH = "/api/v2/song/get/streaming"
 LYRIC_PATH = "/api/v2/lyric/get/lyric"
 SECRET_KEY ="2aa2d1c561e809b267f3638c4a307aab"
 API_KEY = "88265e23d4284f25963e6eedac8fbfa3"
 START = 0
-END =149
-STEP= 1
+END = 0
+STEP= 150
 PAGE = "https://zingmp3.vn"
-COOKIE = "zmp3_rqid=MHwxNC4xNjUdUngMTgyLjIwNXx2MS40LjJ8MTYzNDmUsIC3NzM5NjQ1NA"
+COOKIE = "zpsid=eMqpTcwdFagwSovBAunT1hi0MbKiZrK2lHjJJrtlFLwk76fvMCS1MQypHNGqv0batYn1AasXD1shBreHFiyAGCX7UKO7nIz6o0z4GolPGqwm0XXfL65J; zmp3_sid=c_gzNVP3H665_RvLyaLVQ9-CtZskLbXHgOds0QbNTtwavTK9b2PeUlgSa3JjKsjXmU_-2h0m0qAMrlGljZ1BVvFww4E-I4OZkPVeTTHcIW2ailPiP0; zmp3_rqid_lagecy=MTAzOTM1MDgwNXwxNC4xNjUdUngMTgyLjIwNXxdUngdWxsfDE2MzM3NTE3ODmUsIC3MzY; __zi=3000.SSZzejyD0jSbZUgxWaGPoJIFlgNCIW6AQ9sqkju84vn-akgot4nVctsQxhILJ5sRCfpilvz2MvCoDG.1; __zi-legacy=3000.SSZzejyD0jSbZUgxWaGPoJIFlgNCIW6AQ9sqkju84vn-akgot4nVctsQxhILJ5sRCfpilvz2MvCoDG.1; adtimaUserId=3000.SSZzejyD0jSbZUgxWaGPoJIFlgNCIW6AQ9sqkju84vn-akgot4nVctsQxhILJ5sRCfpilvz2MvCoDG.1; zmp3_app_version.1=143; zmp3_rqid=MHwxNC4xNjUdUngMTgyLjIwNXx2MS40LjN8MTYzNDkwNTE1NTQ0OQ; _zlang=vn; _gid=GA1.2.1218511796.1634905156; atmpv=1; _gat=1"
 #######################################################
 def Hash256(value):
     h = hashlib.sha256(value.encode('utf-8'))
@@ -178,6 +178,11 @@ def ResolveStreamObj(url,Id):
         f.write(res.content)
 
 
+def ReadCookie(path):
+    f = open(path,)
+    data = json.load(f)
+    global COOKIE
+    COOKIE = data['cookies']
 
 
 
@@ -188,11 +193,10 @@ def process_id(prefix, id, cook):
     """process a single ID """
     try:
         ID =  getID(id)
-        url = getSongUrl(ID, CTIME)
+        url = getSongUrl( ID, CTIME)
         ##url ="https://zingmp3.vn/api/v2/song/get/streaming?id=ZW7O777O&ctime=1634777397&version=1.4.2&sig=a90ff23bf3e994d33c729a17fa9e658453dad26041d5554acdf5e1219f712b126d1347a522a5c05d6b7541b3458d0b358253edab0514d38d94555e428a910ad7&apiKey=88265e23d4284f25963e6eedac8fbfa3"
         res = requests.get(url,headers={"cookie":cook})
         obj = res.json()
-        print(obj)
         try:
             if obj['err'] == -201:
                 print("\nCOOKIE Expired")
@@ -205,17 +209,16 @@ def process_id(prefix, id, cook):
                 return id
             elif obj['err'] == -112:
                 print('Private Data')
-            elif obj['err'] == -1150:
-                print("Yêu cầu tài khoản VIP")
             elif obj['err'] == 0:
-                print("Found ID: " + ID)
+                print("Found ID: " + prefix + ID )
                 rObj = ResolveInfoObj(obj['data'])
                 WriteData("Data/song/" + rObj['encodeId'] +".txt", rObj)
                 data = obj['data']
                 #print(data)
-                #ResolveStreamObj(data['128'], ID)
+                #ResolveStreamObj(data['128'],prefix + ID)
             else:
                 print("Some error occur")
+                WriteError("error.txt", obj)
         except:
             print("Some thing else occur")
         finally:
@@ -242,7 +245,7 @@ def threaded_process_range(nthreads, id_range):
     storeZO = {}
     threadsZO = []
     storeZU = {}
-    threadZU = []
+    threadsZU = []
 
 
 
@@ -255,7 +258,7 @@ def threaded_process_range(nthreads, id_range):
 
         threadsZW.append(t1)
         threadsZO.append(t2)
-        threadZU.append(t3)
+        threadsZU.append(t3)
 
 
 
@@ -266,7 +269,7 @@ def threaded_process_range(nthreads, id_range):
     #wait for the theads to finish
     [t1.join() for t1 in threadsZW]
     [t2.join() for t2 in threadsZO]
-    [t3.join() for t2 in threadsZO]
+    [t3.join() for t3 in threadsZO]
 
 
     return storeZO.update(storeZW)
@@ -288,4 +291,4 @@ def Download():
     print(res.json())
 
 if  __name__ == '__main__':
-    Clone()
+   Clone()
